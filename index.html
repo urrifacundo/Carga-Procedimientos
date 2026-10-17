@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carga HERMES · Procedimientos</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<style>
+:root{--ink:#16222e;--mut:#5d6c79;--bg:#edf0f1;--card:#fff;--line:#d9e0e4;--pri:#0d4f5c;--pri2:#e6f2f4;--err:#b42318;--errbg:#fde6e3;--wrn:#8f5a00;--wrnbg:#fff1cc;--ok:#237a4b;--okbg:#e3f3ea;--inf:#2f3c8f;--infbg:#e4e7fb;
+font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg)}
+.top{background:var(--pri);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.top h1{margin:0;font-size:21px}.top p{margin:2px 0 0;color:#bfdde2;font-size:13px}
+.ver{font-size:12px;border:1px solid #5c9aa5;border-radius:99px;padding:3px 10px;margin-left:8px;font-weight:400}
+.topact{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.topact label{color:#cfe6ea}
+.topact input{min-width:190px}
+main{max-width:1500px;margin:0 auto;padding:18px 24px 40px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card h2{margin:0 0 12px;font-size:16px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.card h2 small{font-weight:400;color:var(--mut);font-size:12.5px}
+button,select,input,textarea{font:inherit;font-size:14px;padding:9px 11px;border-radius:8px;border:1px solid #c5d0d6;background:#fff;color:var(--ink);width:100%}
+textarea{resize:vertical;min-height:170px;line-height:1.45}
+button{cursor:pointer;background:var(--pri);color:#fff;border-color:var(--pri);font-weight:600;width:auto;white-space:nowrap}
+button.ghost{background:#fff;color:var(--pri)}
+button.light{background:transparent;color:#fff;border-color:#5c9aa5}
+button.danger{background:#fff;color:var(--err);border-color:#e7b4ae}
+button.small{padding:5px 9px;font-size:12.5px}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid #2a8fa0;outline-offset:2px}
+label{display:block;font-size:12.5px;color:var(--mut);font-weight:600}
+label>input,label>select,label>textarea{display:block;margin-top:5px}
+label>.row{margin-top:5px}
+label>.count{display:block;margin-top:4px}
+main>*{min-width:0}
+label .req{color:var(--err)}
+.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.c2{grid-column:span 2}.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}
+.f-err input,.f-err select,.f-err textarea{border-color:var(--err);background:var(--errbg)}
+.f-wrn input,.f-wrn select,.f-wrn textarea{border-color:#d9a21b;background:#fffaf0}
+.hint{font-weight:400;font-size:12px;color:var(--mut);min-height:0}
+.row{display:flex;gap:8px;align-items:center}
+.row>input{flex:1}
+.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;align-items:center}
+.actions .grow{flex:1;font-size:12.5px;color:var(--mut)}
+aside{position:sticky;top:14px;display:flex;flex-direction:column;gap:14px}
+.chk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.chk li{border-radius:9px;padding:9px 11px;font-size:13px;line-height:1.38;border:1px solid transparent}
+.chk li b{display:block;font-size:12px;letter-spacing:.02em;text-transform:uppercase;margin-bottom:2px}
+.chk .err{background:var(--errbg);color:#7a1810;border-color:#f3c3bc}
+.chk .wrn{background:var(--wrnbg);color:#5f3d00;border-color:#f0d58c}
+.chk .inf{background:var(--infbg);color:#24306f;border-color:#c8cff3}
+.chk .ok{background:var(--okbg);color:#1b5e3a;border-color:#bfe2cd}
+.chk button{margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpis div{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:12px;color:var(--mut)}
+.kpis b{display:block;font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpis .e b{color:var(--err)}.kpis .w b{color:var(--wrn)}
+.list{grid-column:1/-1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--mut);border-bottom:2px solid var(--line);padding:8px 8px;position:sticky;top:0;background:#fff}
+.tbl td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
+.tbl tr.sel td{background:var(--pri2)}
+.tbl tr:hover td{background:#f6f9fa}
+.tbl .n{color:var(--mut);font-variant-numeric:tabular-nums;width:34px}
+.tbl small{display:block;color:var(--mut);font-size:12px}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 8px;margin:0 4px 3px 0;white-space:nowrap}
+.pill.err{background:var(--errbg);color:var(--err)}.pill.wrn{background:var(--wrnbg);color:var(--wrn)}.pill.ok{background:var(--okbg);color:var(--ok)}.pill.inf{background:var(--infbg);color:var(--inf)}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+.tblwrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools input{max-width:260px}
+dialog{border:none;border-radius:14px;padding:0;max-width:640px;width:calc(100% - 32px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(16,30,40,.45)}
+.dlg{padding:20px 22px}
+.dlg h3{margin:0 0 10px}
+.dlg ul{max-height:300px;overflow:auto;padding-left:18px;font-size:13.5px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:9px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.count{font-weight:400;color:var(--mut);font-size:12px;text-align:right}
+.edit-banner{display:none;background:var(--wrnbg);color:#5f3d00;border-radius:8px;padding:8px 12px;font-size:13px;margin-bottom:12px}
+.edit-banner.on{display:block}
+@media (max-width:1100px){main{grid-template-columns:1fr}aside{position:static}}
+@media (max-width:700px){.grid{grid-template-columns:1fr}.c2,.c3,.c4,.c6{grid-column:auto}main{padding:12px}.top{padding:12px}.tbl .hide-m{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Carga de Procedimientos <span class="ver">HERMES · v1.0</span></h1>
+    <p>Elegir primero la especialidad. Al terminar, <b>Finalizar</b> genera el Excel para enviar.</p>
+  </div>
+  <div class="topact">
+    <label>Operador<input id="operador" placeholder="Apellido y nombre" autocomplete="name"></label>
+    <button class="light" id="btnAbrir" title="Abrir una planilla Excel para seguir cargando o corregir">Abrir Excel</button>
+    <input type="file" id="fileIn" accept=".xlsx,.xls" hidden>
+    <button class="light" id="btnNueva">Nueva planilla</button>
+    <button id="btnFin" style="background:#fff;color:var(--pri)">Finalizar y descargar Excel</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2><span id="formTitle">Nuevo procedimiento</span><small>Los campos con <span style="color:var(--err)">*</span> son obligatorios</small></h2>
+    <div class="edit-banner" id="editBanner">Editando el procedimiento N° <b id="editN"></b>. Guardar actualiza ese procedimiento. <a href="#" id="cancelEdit">Cancelar edición</a></div>
+    <div class="grid" id="form">
+      <label class="c2" id="w-ESPECIALIDAD">Especialidad <span class="req">*</span><select id="ESPECIALIDAD"></select></label>
+      <label class="c2" id="w-FECHA">Fecha del procedimiento <span class="req">*</span><input type="date" id="FECHA"></label>
+      <label class="c2" id="w-PU">PU<input id="PU" inputmode="numeric" placeholder="Ej.: 295574" autocomplete="off"></label>
+      <label class="c3" id="w-PARTIDO">Partido <span class="req">*</span><input id="PARTIDO" list="dlPartidos" placeholder="Escribir o elegir…" autocomplete="off"><datalist id="dlPartidos"></datalist></label>
+      <label class="c3" id="w-LOCALIDAD">Localidad <span class="req">*</span><input id="LOCALIDAD" list="dlLocalidades" placeholder="Primero el partido" autocomplete="off"><datalist id="dlLocalidades"></datalist></label>
+      <label class="c6" id="w-CARATULA">Carátula <span class="req">*</span><select id="CARATULA"></select><span class="hint" id="carHint"></span></label>
+      <label class="c6" id="w-COORDENADAS">Coordenadas (latitud, longitud) <span class="req">*</span>
+        <span class="row"><input id="COORDENADAS" placeholder="-34.466598, -58.960000" autocomplete="off"><button type="button" class="ghost small" id="btnMapa">Ver en mapa</button></span>
+      </label>
+      <label class="c6" id="w-EXTRACTO">Extracto <span class="req">*</span><textarea id="EXTRACTO" placeholder="Pegar el texto completo del procedimiento (encabezado y relato)."></textarea><span class="count" id="cnt">0 caracteres</span></label>
+    </div>
+    <div class="actions">
+      <span class="grow">Ctrl + Enter guarda el procedimiento. Lo cargado queda guardado en este navegador aunque se cierre la página.</span>
+      <button class="ghost" id="btnLimpiar">Limpiar</button>
+      <button id="btnGuardar">Guardar procedimiento</button>
+    </div>
+  </section>
+
+  <aside>
+    <section class="card">
+      <h2>Controles del procedimiento</h2>
+      <ul class="chk" id="checks"><li class="inf">Los controles aparecen mientras se completa el formulario.</li></ul>
+    </section>
+    <section class="card">
+      <h2>Planilla</h2>
+      <div class="kpis"><div><b id="kTot">0</b>cargados</div><div class="e"><b id="kErr">0</b>con errores</div><div class="w"><b id="kWrn">0</b>a revisar</div></div>
+    </section>
+  </aside>
+
+  <section class="card list">
+    <h2>Procedimientos cargados <span class="tools"><input id="buscar" placeholder="Buscar en la lista…"></span></h2>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>N°</th><th>Especialidad</th><th>Fecha</th><th>Partido / Localidad</th><th>Carátula</th><th class="hide-m">PU</th><th>Estado</th><th></th></tr></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+</main>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA={"ESP":["Complejas","Investigaciones","Narcotrafico"],"PROC":["Abandono de persona","Abigeato","Abuso de arma","Abuso sexual","Administración fraudulenta","Amenazas","Art. 145 bis CP (Trata de Personas)","Art. 149 bis 2do Parrafo ( Coacción)","Art. 247 (Usurpación de Titulo)","Art. 303 CPP (Rebeldia)","Asociación ilícita","Av. de Paradero","Averiguación Causales de Muerte","Averiguación de ilícito","Calumnias e Injurias","Captura","Corrupción de menores","Daño","Defraudación informática","Delito de Acción Pública","Delitos sexuales","Desobediencia","Encubrimiento","Estafa","Estorbo","Evasión","Exacciones Ilegales","Extorsión","Falsa denuncia","Falsificación de documentos","Grooming","Homicidio","Homicidio culposo","Hurto","Incendio","Incumplimiento a los Deberes de Funcionario","INF. ART 200 Y 201 DEL C.P - TRÁFICO DE MEDICAMENTO","Inf. Art. 189 bis del CP (tenencia, portación, fabricación y acopio ilegal de armas de fuego, explosivos y otros materiales peligrosos)","Inf. Art. 193 del CP (participación en pruebas ilegales de velocidad o destreza con vehículos (\"picadas\"))","Inf. Art. 204 del CP (mal suministro de sustancias medicinales)","Inf. Art. 289 CP","Inf. Art. 289 DEL C.P","Inf. Art. 289 del CP (Falsificación de marcas oficiales, billetes de transporte o números de identificación)","Inf. Decreto-Ley 8.031 (quebrantamiento del arresto domiciliario)","Inf. Ley 11.723 (propiedad intelectual y derechos de autor)","Inf. Ley 11.929 (prevención y represión de la violencia en espectáculos deportivos)","Inf. Ley 12.569 (Violencia Familiar)","Inf. Ley 13564 (Registro de metales no ferrosos)","Inf. Ley 14.346 (maltrato animal)","Inf. Ley 22.362 (Persona o empresa que utiliza, falsifica, imita o comercializa una marca registrada sin la autorización del titular)","Inf. Ley 23.592 (actos discriminatorios)","Inf. Ley 23.737","Inf. Ley 24.270 (padre, madre o tercero que de forma ilegal impida u obstruya el contacto de menores de edad con sus padres no convivientes)","Inf. Ley 25.761 (Comercialización de autopartes o desarme de vehículos sin habilitación)","Infracción al Artículo 970 del Código Aduanero","Intimidación pública","Juego Clandestino","Lesiones","Ley 11.922 del CPP (Comparendo Compulsivo)","Ley 13.081","Malversación de Fondos","PIL","Portacion ilegal de arma de fuego","Resistencia a la Autoridad","Retención indebida","Revocatoria de arresto domiciliario","Robo","Sustracción de Menor","Tenencia de arma de fuego","Ttva. de Homicidio","Ttva. de Hurto","Ttva. de Robo","Uso de Documento Falso","Usurpación","Violación de domicilio","Violencia de género"],"LPP":{"Adolfo Alsina":["Carhué","Espartillar","Rivera","San Miguel Arcángel","Villa Maza"],"Adolfo Gonzales Chaves":["Gonzales Chaves","De la Garma","Juan E. Barra","Vásquez"],"Alberti":["Alberti","Coronel Mom","Mechita","Pla","Villa Ortiz"],"Almirante Brown":["Adrogué","Burzaco","Claypole","Don Orione","Glew","José Mármol","Longchamps","Malvinas Argentinas","Ministro Rivadavia","Rafael Calzada","San Francisco Solano","San José"],"Arrecifes":["Arrecifes","Todd","Tordillo","Viña"],"Avellaneda":["Avellaneda","Dock Sud","Gerli","Piñeiro","Sarandí","Villa Domínico","Wilde"],"Ayacucho":["Ayacucho","La Constancia","Solanet","Ugarte"],"Azul":["Azul","16 de Julio","Cacharí","Chillar"],"Bahía Blanca":["Bahía Blanca","Cabildo","General Daniel Cerri","Grünbein","Ingeniero White"],"Balcarce":["Balcarce","Los Pinos","Napaleofú","Ramos Otero","San Agustín"],"Baradero":["Baradero","Alsina","Ireneo Portela","Santa Coloma"],"Benito Juárez":["Benito Juárez","Barker","Estación López","Tedín Uriburu","Villa Cacique"],"Berazategui":["Berazategui","Carlos Tomás Sourigues","El Pato","Hudson","Juan María Gutiérrez","Pereyra","Ranelagh","Villa España"],"Berisso":["Berisso","Los Talas","Villa Argüello","Villa Zula"],"Bolívar":["San Carlos de Bolívar","Hale","Pirovano","Urdampilleta"],"Bragado":["Bragado","Comodoro Py","La Limpia","Mechita","O'Brien","Warnes"],"Brandsen":["Coronel Brandsen","Altamirano","Domselaar","Gómez","Jeppener"],"Campana":["Campana","Lomas de Río Luján","Rincón de Milberg"],"Cañuelas":["Cañuelas","Alejandro Petión","Gobernador Udaondo","Máximo Paz","Uribelarrea","Vicente Casares"],"Capitán Sarmiento":["Capitán Sarmiento","La Luisa"],"Carlos Casares":["Carlos Casares","Bellocq","Cadret","Mauricio Hirsch","Moctezuma","Ordoqui","Smith"],"Carlos Tejedor":["Carlos Tejedor","Colonia Seré","Curarú","Timote","Tres Algarrobos"],"Carmen de Areco":["Carmen de Areco","Pueyrredón","Tres Sargentos"],"Castelli":["Castelli","Cerro de la Gloria"],"Chacabuco":["Chacabuco","Castilla","O'Higgins","Rawson"],"Chascomús":["Chascomús","Gándara","Lagunas"],"Chivilcoy":["Chivilcoy","Benítez","Gorostiaga","Moquehuá","Ramón Biaus","San Sebastián"],"Colón":["Colón","El Arbolito","Hughes","Pearson","Saraya"],"Coronel Dorrego":["Coronel Dorrego","Aparicio","El Perdido","Faro","Oriente","San Román"],"Coronel Pringles":["Coronel Pringles","El Divisadero","Indio Rico"],"Coronel Rosales":["Punta Alta","Bajo Hondo","Pehuen-Có","Villa General Arias"],"Coronel Suárez":["Coronel Suárez","Cura Malal","Huanguelén","Pueblo San José","Pueblo Santa María","Pueblo Santa Trinidad"],"Daireaux":["Daireaux","Arboledas","La Larga","Salazar"],"Dolores":["Dolores","Sevigne"],"Ensenada":["Ensenada","El Dique","Punta Lara"],"Escobar":["Belén de Escobar","24 de Febrero","Garín","Ingeniero Maschwitz","Maquinista Savio","Matheu"],"Esteban Echeverría":["Monte Grande","9 de Abril","Canning","El Jagüel","Luis Guillón"],"Exaltación de la Cruz":["Capilla del Señor","El Remanso","Los Cardales","Parada Robles","Pavón"],"Ezeiza":["Ezeiza","Canning","Carlos Spegazzini","La Unión","Tristán Suárez"],"Florencio Varela":["Florencio Varela","Bosques","Gobernador Costa","Ingeniero Allan","Villa Vatteone","Zeballos"],"Florentino Ameghino":["Florentino Ameghino","Blaquier","Porvenir"],"General Alvarado":["Miramar","Mar del Sud","Mechongué","Otamendi"],"General Alvear":["General Alvear","Del Valle"],"General Arenales":["General Arenales","Arribeños","Ascensión","Ferré","La Trinidad"],"General Belgrano":["General Belgrano","Gorchs"],"General Guido":["General Guido","Labardén"],"General La Madrid":["General La Madrid","La Colina","Las Martinetas","Líbano"],"General Las Heras":["General Las Heras","Hornos","Plomer","Villars"],"General Lavalle":["General Lavalle","Pavón"],"General Juan Madariaga":["General Madariaga","Juancho"],"General Paz":["Ranchos","Loma Verde","Villanueva"],"General Pinto":["General Pinto","Coronel Granada","Germania","Villa Francia"],"General Pueyrredon":["Mar del Plata","Batán","Camet","Chapadmalal","Sierra de los Padres"],"General Rodríguez":["General Rodríguez","La Reja","Las Malvinas"],"General San Martín":["San Martín","Billinghurst","José León Suárez","San Andrés","Villa Ballester","Villa Lynch"],"General Viamonte":["Los Toldos","Baigorrita","San Emilio","Zavalía"],"General Villegas":["General Villegas","Banderaló","Cañada Seca","Coronel Charlone","Emilio V. Bunge","Piedritas"],"Guaminí":["Guaminí","Casbas","Garré","Laguna Alsina"],"Hipólito Yrigoyen":["Henderson","Herrera Vegas","Magdala"],"Hurlingham":["Hurlingham","Villa Tesei","William Morris"],"Ituzaingó":["Ituzaingó","Villa Udaondo"],"Junín":["Junín","Agustín Roca","Laplacette","Morse","Saforcada","Tiburcio"],"La Costa":["Mar del Tuyú","Aguas Verdes","Costa del Este","La Lucila del Mar","Las Toninas","Lucila del Mar","Mar de Ajó","Nueva Atlantis","San Bernardo","San Clemente","San Clemente del Tuyú","Santa Teresita"],"La Matanza":["San Justo","20 de Junio","Aldo Bonzi","Ciudad Evita","González Catán","Gregorio de Laferrere","Isidro Casanova","La Tablada","Lomas del Mirador","Rafael Castillo","Ramos Mejía","Tapiales","Villa Celina","Villa Luzuriaga","Villa Madero","Virrey del Pino"],"La Plata":["La Plata","Abasto","Arturo Seguí","City Bell","Etcheverry","Gonnet","Los Hornos","Melchor Romero","Olmos","Ringuelet","San Carlos","Tolosa","Villa Elisa"],"Lanús":["Lanús","Lanús Este","Lanús Oeste","Monte Chingolo","Remedios de Escalada","Valentín Alsina"],"Laprida":["Laprida","Pleiades","San Jorge"],"Las Flores":["Las Flores","El Trigo","Pardo"],"Leandro N. Alem":["Vedia","Alberdi","El Dorado","Juan B. Alberdi"],"Lincoln":["Lincoln","Arenaza","Bayauca","El Triunfo","Las Toscas","Pasteur","Roberts","Triunvirato"],"Lobería":["Lobería","Pieres","San Manuel","Tamangueyú"],"Lobos":["Lobos","Empalme Lobos","Laguna de Lobos","Salvador María","Zapiola"],"Lomas de Zamora":["Lomas de Zamora","Banfield","Ingeniero Budge","Llavallol","Temperley","Turdera","Villa Centenario"],"Luján":["Luján","Carlos Keen","Jáuregui","Olivera","Open Door","Pueblo Nuevo","Torres"],"Magdalena":["Magdalena","Álvarez Jonte","Atalaya","General Mansilla (Bavio)","Vieytes"],"Maipú":["Maipú","Las Armas","Santo Domingo"],"Malvinas Argentinas":["Los Polvorines","Grand Bourg","Ing. Sourdeaux","Pablo Nogués","Tortuguitas","Villa de Mayo"],"Mar Chiquita":["Coronel Vidal","Camet Norte","General Pirán","La Caleta","Mar de Cobo","Santa Clara del Mar","Vivoratá"],"Marcos Paz":["Marcos Paz","El Moro","San Eduardo","Santa Marta"],"Mercedes":["Mercedes","Agote","Altamira","Gowland","Tomás Jofré"],"Monte":["San Miguel del Monte","Abbott","Zenón Videla Dorna"],"Monte Hermoso":["Monte Hermoso","Balneario Sauce Grande","Faro Recalada"],"Moreno":["Moreno","Cuartel V","Francisco Álvarez","La Reja","Paso del Rey","Trujui"],"Morón":["Morón","Castelar","El Palomar","Haedo","Villa Sarmiento"],"Navarro":["Navarro","J. J. Almeyra","Las Marianas","Villa Moll"],"Necochea":["Necochea","Claraz","Juan N. Fernández","La Dulce","Quequén","Ramón Santamarina"],"9 de Julio":["9 de Julio","12 de Octubre","Dudignac","El Provincial","French","La Niña","Patricios","Quiroga"],"Olavarría":["Olavarría","Colonia Hinojo","Espigas","Hinojo","Loma Negra","Recalde","Sierra Chica","Sierras Bayas"],"Patagones":["Carmen de Patagones","Pradere","San Blas","Stroeder","Villalonga"],"Pehuajó":["Pehuajó","Francisco Madero","Guanaco","Juan José Paso","Magdala","Mones Cazón"],"Pellegrini":["Pellegrini","Bocayuva","De Bary"],"Pergamino":["Pergamino","Acevedo","Alfonso","El Socorro","Guerrico","Juan A. de la Peña","Manuel Ocampo"],"Pila":["Pila","Casalins"],"Pilar":["Pilar","Del Viso","Derqui","Fátima","Manuel Alberti","Manzanares","Villa Rosa","Zelaya"],"Pinamar":["Pinamar","Cariló","Ostende","Valeria del Mar"],"Presidente Perón":["Guernica","Guernica Este","Guernica Oeste"],"Puan":["Puan","Azopardo","Bordenave","Darregueira","Felipe Sola","San Germán","Villa Iris"],"Punta Indio":["Verónica","Álvarez Jonte","Magdalena parcial","Pipinas"],"Quilmes":["Quilmes","Bernal","Bernal Oeste","Don Bosco","Ezpeleta","Quilmes Oeste","San Francisco Solano","Villa La Florida"],"Ramallo":["Ramallo","Pérez Millán","Villa General Savio","Villa Ramallo"],"Rauch":["Rauch","Egaña","Miranda"],"Rivadavia":["América","Fortín Olavarría","González Moreno","Mira Pampa","Roosevelt","Sansinena"],"Rojas":["Rojas","Carabelas","La Beba","Los Indios","Rafael Obligado"],"Saladillo":["Saladillo","Álvarez de Toledo","Cazón","Del Carril","Polvaredas"],"Salliqueló":["Salliqueló","Quenumá"],"Salto":["Salto","Berdier","Gahan","Inés Indart"],"San Andrés de Giles":["San Andrés de Giles","Azcuénaga","Cucullú","Solís","Villa Ruiz"],"San Antonio de Areco":["San Antonio de Areco","Duggan","Vagues"],"San Cayetano":["San Cayetano","Ochandio"],"San Fernando":["San Fernando","Delta de San Fernando","Victoria","Virreyes"],"San Isidro":["San Isidro","Acassuso","Beccar","Boulogne","Martínez","Villa Adelina"],"San Miguel":["San Miguel","Bella Vista","Campo de Mayo","Muñiz"],"San Nicolás":["San Nicolás de los Arroyos","Conesa","Erézcano","General Rojo","La Emilia"],"San Pedro":["San Pedro","Gobernador Castro","Río Tala","Santa Lucía","Vuelta de Obligado"],"San Vicente":["San Vicente","Alejandro Korn","Domselaar"],"Suipacha":["Suipacha","Rivas"],"Tandil":["Tandil","Fulton","Gardey","María Ignacia (Vela)"],"Tapalqué":["Tapalqué","Allen Peret","Crotto"],"Tigre":["Tigre","Benavidez","Dique Luján","Don Torcuato","El Talar","General Pacheco","Rincón de Milberg"],"Tornquist":["Tornquist","Chasicó","Saldungaray","Sierra de la Ventana","Tres Picos","Villa Ventana"],"Trenque Lauquen":["Trenque Lauquen","30 de Agosto","Berutti","Girodías","La Carreta"],"Tres Arroyos":["Tres Arroyos","Claromecó","Copetonas","Orense","Reta","San Francisco de Bellocq"],"Tres de Febrero":["Caseros","Ciudadela","El Palomar","José Ingenieros","Loma Hermosa","Martín Coronado","Sáenz Peña","Santos Lugares"],"Vicente López":["Olivos","Carapachay","Florida","La Lucila","Munro","Vicente López","Villa Martelli"],"Villa Gesell":["Villa Gesell","Las Gaviotas","Mar Azul","Mar de las Pampas"],"Villarino":["Médanos","Hilario Ascasubi","Juan Cousté","Mayor Buratovich","Pedro Luro","Teniente Origone"],"Zárate":["Zárate","Escalada","Lima"],"José C. Paz":["José C. Paz"],"Lezama":["Lezama"],"Merlo":["Merlo","Libertad","Mariano Acosta","Parque San Martín","Pontevedra","San Antonio de Padua"],"Roque Pérez":["Roque Pérez","Carlos Beguerie"],"Saavedra":["Saavedra","Arroyo Corto","Dufaur","Goyena","Pigüé"],"Tordillo":["Tordillo"],"Tres Lomas":["Tres Lomas","Ingeniero Thompson"],"25 de Mayo":["25 de Mayo","Agustín Mosconi","Del Valle","Ernestina","Gobernador Ugarte","Lucas Monteverde","Norberto de la Riestra","Pedernales","Valdés"]},"PCENT":{"moron":["Morón",-34.651,-58.62,4.2],"merlo":["Merlo",-34.665,-58.727,7.4],"ituzaingo":["Ituzaingó",-34.659,-58.668,3.6],"hurlingham":["Hurlingham",-34.592,-58.637,2.6],"tres de febrero":["Tres de Febrero",-34.6,-58.56,4],"moreno":["Moreno",-34.634,-58.79,7],"la matanza":["La Matanza",-34.77,-58.63,10],"general rodriguez":["General Rodríguez",-34.605,-58.95,10.7],"marcos paz":["Marcos Paz",-34.78,-58.84,11],"lomas de zamora":["Lomas de Zamora",-34.76,-58.4,5.3],"lanus":["Lanús",-34.705,-58.392,3.8],"avellaneda":["Avellaneda",-34.662,-58.365,4.5],"quilmes":["Quilmes",-34.72,-58.265,6],"almirante brown":["Almirante Brown",-34.825,-58.39,6.4],"esteban echeverria":["Esteban Echeverría",-34.82,-58.47,6.5],"ezeiza":["Ezeiza",-34.855,-58.52,8.4],"florencio varela":["Florencio Varela",-34.8,-58.275,7.8],"berazategui":["Berazategui",-34.765,-58.21,8],"general san martin":["General San Martín",-34.575,-58.535,3.8],"san isidro":["San Isidro",-34.47,-58.51,3.9],"vicente lopez":["Vicente López",-34.525,-58.48,3.5],"san fernando":["San Fernando",-34.44,-58.56,5],"tigre":["Tigre",-34.425,-58.58,7],"san miguel":["San Miguel",-34.543,-58.712,5.1],"jose c paz":["José C. Paz",-34.515,-58.77,3.4],"malvinas argentinas":["Malvinas Argentinas",-34.5,-58.7,4.5],"pilar":["Pilar",-34.46,-58.915,10.5],"escobar":["Escobar",-34.35,-58.79,9.4],"la plata":["La Plata",-34.92,-57.955,17],"berisso":["Berisso",-34.87,-57.885,6.5],"ensenada":["Ensenada",-34.858,-57.91,5.6]}};
+const VERSION='1.0';
+const CAMPOS=['ESPECIALIDAD','FECHA','PARTIDO','LOCALIDAD','CARATULA','COORDENADAS','PU','EXTRACTO'];
+const NARCO='Narcotrafico',C_NARCO='Inf. Ley 23.737';
+const $=id=>document.getElementById(id);
+const norm=s=>String(s??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const key=s=>norm(s).replace(/\./g,'');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PART=Object.keys(DATA.LPP).sort((a,b)=>norm(a).localeCompare(norm(b)));
+const PKEY={};PART.forEach(p=>PKEY[key(p)]=p);
+const ESPS=DATA.ESP,CARS=DATA.PROC.slice().sort((a,b)=>norm(a).localeCompare(norm(b)));
+const CKEY={};CARS.forEach(c=>CKEY[key(c)]=c);
+const ALIAS_C={'robo calificado':'Robo','robo agravado':'Robo','robo doblemente agravado':'Robo','lesiones leves':'Lesiones','lesiones graves':'Lesiones','lesiones leves agravadas':'Lesiones','amenazas agravadas':'Amenazas','dano':'Daño','danos':'Daño','tentativa de robo':'Ttva. de Robo','tentativa de hurto':'Ttva. de Hurto','tentativa de homicidio':'Ttva. de Homicidio','inf ley 23737':C_NARCO,'ley 23737':C_NARCO,'inf ley 13081':'Ley 13.081','averiguacion de paradero':'Av. de Paradero','pil':'PIL','p i l':'PIL','portacion ilegal de arma de fuego':'Portacion ilegal de arma de fuego'};
+let state={operador:'',hechos:[]},editId=null;
+
+/* ---------- guardado local ---------- */
+const LS='cargaHermes.procedimientos';
+function persist(){try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}}
+function restore(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s&&Array.isArray(s.hechos))state=s}catch(e){}}
+
+/* ---------- utilidades ---------- */
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
+function fechaTxt(iso){if(!iso)return'';const m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?`${m[3]}/${m[2]}/${m[1]}`:iso}
+function fechaIso(v){if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);if(typeof v==='number'){const d=new Date(Math.round((v-25569)*864e5));return d.toISOString().slice(0,10)}const s=String(v||'').trim();let m=s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);if(m)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:''}
+function parseCoord(v){const m=String(v||'').trim().replace(/[;|]/g,',').match(/^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/);if(!m)return null;const a=+m[1],b=+m[2];return isFinite(a)&&isFinite(b)?[a,b]:null}
+function km(a,b,c,d){const R=6371,r=x=>x*Math.PI/180,x=r(d-b)*Math.cos(r((a+c)/2)),y=r(c-a);return Math.sqrt(x*x+y*y)*R}
+function canonPartido(v){const k=key(v);return PKEY[k]||PKEY[k.replace(/^gral /,'general ')]||(k==='san martin'?'General San Martín':null)}
+function canonLista(v,lista){const k=key(v);return (lista||[]).find(x=>key(x)===k)||null}
+function canonCar1(v){const k=key(v).replace(/[–-]/g,' ').replace(/\s+/g,' ').trim();return CKEY[k]||ALIAS_C[k]||null}
+function canonCar(v){const c=canonCar1(v);if(c)return c;const t=String(v||'').trim();
+  if(/^(captura|detenci[oó]n)\b/i.test(t))return /^captura/i.test(t)?'Captura':null;
+  const first=t.split(/\s+[-–]\s+|,|\s+y\s+|\s*\(/)[0];if(first&&first!==t){const c2=canonCar1(first);if(c2)return c2}
+  const m=t.match(/^(robo|hurto|lesiones|amenazas|abuso sexual|estafa|homicidio|da[nñ]o)\b/i);return m?canonCar1(m[1]):null}
+function canonEsp(v){const k=norm(v);return ESPS.find(e=>norm(e)===k)||(k.startsWith('narco')?NARCO:k.startsWith('investig')?'Investigaciones':k.startsWith('compleja')?'Complejas':null)}
+function limpiarTexto(s){return String(s||'').replace(/[\r\n\t]+/g,' ').replace(/\s{2,}/g,' ').trim()}
+const NARCO_RE=/estupefacient|23\.?737|marihuana|cocaina|paco\b|narcomenudeo|bunker|cannabis|psicotropic/;
+
+/* ---------- controles ---------- */
+function controles(h,todos){
+  const out=[],E=(f,m,a)=>out.push({l:'err',f,m,a}),W=(f,m,a)=>out.push({l:'wrn',f,m,a}),I=(f,m,a)=>out.push({l:'inf',f,m,a});
+  const nom={ESPECIALIDAD:'especialidad',FECHA:'fecha',PARTIDO:'partido',LOCALIDAD:'localidad',CARATULA:'carátula',COORDENADAS:'coordenadas',EXTRACTO:'extracto'};
+  for(const c in nom)if(!String(h[c]||'').trim())E(c,'Falta completar '+nom[c]+'.');
+  if(h.ESPECIALIDAD&&!ESPS.includes(h.ESPECIALIDAD))E('ESPECIALIDAD','"'+h.ESPECIALIDAD+'" no es una especialidad válida ('+ESPS.join(', ')+').',canonEsp(h.ESPECIALIDAD)?{t:'Usar '+canonEsp(h.ESPECIALIDAD),set:{ESPECIALIDAD:canonEsp(h.ESPECIALIDAD)}}:null);
+  if(h.FECHA){const d=new Date(h.FECHA+'T12:00:00'),hoy=new Date();if(isNaN(d))E('FECHA','Fecha inválida.');else if(d>new Date(hoy.getTime()+864e5))E('FECHA','La fecha es posterior a hoy.');else if(hoy-d>60*864e5)W('FECHA','El procedimiento tiene más de 60 días: verificar la fecha.')}
+  const P=h.PARTIDO?canonPartido(h.PARTIDO):null;
+  if(h.PARTIDO&&!P)E('PARTIDO','"'+h.PARTIDO+'" no es un partido de la Provincia. Elegirlo de la lista.');
+  if(P&&h.LOCALIDAD&&!canonLista(h.LOCALIDAD,DATA.LPP[P]))W('LOCALIDAD','"'+h.LOCALIDAD+'" no figura entre las localidades de '+P+'. Verificar que corresponda a ese partido.');
+  if(h.CARATULA&&!CARS.includes(h.CARATULA)){const c=canonCar(h.CARATULA);E('CARATULA','"'+h.CARATULA+'" no es una carátula de Procedimientos.'+(c?' Usar: '+c:''),c?{t:'Usar '+c,set:{CARATULA:c}}:null)}
+  if(h.ESPECIALIDAD===NARCO&&h.CARATULA&&h.CARATULA!==C_NARCO)E('CARATULA','Con especialidad Narcotrafico la carátula es únicamente '+C_NARCO+'.',{t:'Usar '+C_NARCO,set:{CARATULA:C_NARCO}});
+  const T=norm(h.EXTRACTO),H=T.slice(0,260);
+  if(h.ESPECIALIDAD&&h.ESPECIALIDAD!==NARCO&&(h.CARATULA===C_NARCO||(T&&NARCO_RE.test(H))))W('ESPECIALIDAD',(h.CARATULA===C_NARCO?'La carátula es '+C_NARCO:'El encabezado habla de estupefacientes')+': verificar si la especialidad no es Narcotrafico.',{t:'Cambiar a Narcotrafico',set:{ESPECIALIDAD:NARCO}});
+  if(h.COORDENADAS){const c=parseCoord(h.COORDENADAS);
+    if(!c)E('COORDENADAS','Formato inválido. Escribir latitud, longitud (ej.: -34.466598, -58.960000).');
+    else if(c[0]<-41.2||c[0]>-33.2||c[1]<-63.5||c[1]>-56.6)E('COORDENADAS','Las coordenadas quedan fuera de la Provincia. ¿Están invertidas o les falta el signo menos?');
+    else if(P){const pc=DATA.PCENT[key(P)];if(pc){const d0=km(c[0],c[1],pc[1],pc[2]);let best=null,bd=1e9;for(const v of Object.values(DATA.PCENT)){const d=km(c[0],c[1],v[1],v[2]);if(d<bd){bd=d;best=v}}
+      if(best[0]!==pc[0]&&d0>1.5*pc[3]+2&&bd<d0*.7)W('COORDENADAS','Las coordenadas quedan más cerca de '+best[0]+' que de '+P+'. Verificar en el mapa.')}}}
+  if(h.EXTRACTO){
+    if(T.length<120)W('EXTRACTO','El extracto es muy corto: tiene que permitir entender qué se hizo, dónde y el resultado.');
+    if(/[àèìòù]/i.test(h.EXTRACTO+h.LOCALIDAD))W('EXTRACTO','Hay acentos al revés (à è ì ò ù). Usar á é í ó ú.');
+    const m=h.EXTRACTO.match(/\bPU\.?\s*[:#-]?\s*(\d{5,})/i);
+    if(m&&h.PU&&m[1]!==String(h.PU).trim())W('PU','El PU del extracto ('+m[1]+') no coincide con el cargado ('+h.PU+').');
+    if(m&&!h.PU)I('PU','El extracto menciona el PU '+m[1]+'.',{t:'Cargar PU '+m[1],set:{PU:m[1]}});
+    if(/enfrentamiento|intercambio de disparos|repeli\w*|tiroteo/.test(T))I('ESP','Posible ENFRENTAMIENTO: va en Enfrentamientos PBA solo si consta que ambas partes estaban armadas.');
+    if(/\b(obito|sin vida|fallec\w*)\b/.test(T)&&/\b(haf|balead\w*|disparo\w*|enfrentamiento|atrincher\w*)\b/.test(T))I('ESP','Hay una persona fallecida: avisar al control (posible homicidio o enfrentamiento).');
+  }
+  if(h.PU&&!/^\d{4,}$/.test(String(h.PU).trim()))W('PU','El PU debería tener solo números.');
+  if(h.PU&&todos){const d=todos.filter(x=>x.id!==h.id&&String(x.PU).trim()===String(h.PU).trim());if(d.length)W('PU','Este PU ya está cargado en la planilla (N° '+d.map(x=>todos.indexOf(x)+1).join(', ')+').')}
+  return out;
+}
+const nivel=cs=>cs.some(c=>c.l==='err')?'err':cs.some(c=>c.l==='wrn')?'wrn':'ok';
+
+/* ---------- formulario ---------- */
+function opts(el,list,first){el.innerHTML=(first!==undefined?`<option value="">${esc(first)}</option>`:'')+list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}
+function dl(el,list){el.innerHTML=list.map(x=>`<option value="${esc(x)}"></option>`).join('')}
+function leerForm(){const h={id:editId||('h'+Date.now()+Math.random().toString(16).slice(2,6))};for(const c of CAMPOS)h[c]=$(c).value.trim();return h}
+function escribirForm(h){$('ESPECIALIDAD').value=h.ESPECIALIDAD||'';onEsp();for(const c of CAMPOS)if(c!=='ESPECIALIDAD'&&c!=='CARATULA')$(c).value=h[c]||'';onPartido();
+  $('CARATULA').value=h.CARATULA||'';if(h.CARATULA&&$('CARATULA').value!==h.CARATULA){$('CARATULA').insertAdjacentHTML('beforeend',`<option value="${esc(h.CARATULA)}">${esc(h.CARATULA)} (no válida)</option>`);$('CARATULA').value=h.CARATULA}contar();revisar()}
+function onPartido(){const P=canonPartido($('PARTIDO').value);if(P&&P!==$('PARTIDO').value)$('PARTIDO').value=P;
+  dl($('dlLocalidades'),P?DATA.LPP[P]:[]);$('LOCALIDAD').placeholder=P?'Escribir o elegir…':'Primero el partido';
+  if(P){const L=canonLista($('LOCALIDAD').value,DATA.LPP[P]);if(L)$('LOCALIDAD').value=L}}
+function onEsp(){const e=$('ESPECIALIDAD').value,cur=$('CARATULA').value;
+  if(!e){opts($('CARATULA'),[],'Primero la especialidad');$('carHint').textContent='';return}
+  if(e===NARCO){opts($('CARATULA'),[C_NARCO]);$('CARATULA').value=C_NARCO;$('carHint').textContent='Narcotrafico: la carátula es únicamente '+C_NARCO+'.';return}
+  opts($('CARATULA'),CARS,'Elegir carátula…');$('carHint').textContent='';if(CARS.includes(cur))$('CARATULA').value=cur}
+function contar(){$('cnt').textContent=$('EXTRACTO').value.length+' caracteres'}
+function revisar(){
+  const h=leerForm(),vacio=['PARTIDO','LOCALIDAD','COORDENADAS','PU','EXTRACTO'].every(c=>!h[c])&&(!h.CARATULA||h.ESPECIALIDAD===NARCO);
+  const cs=vacio?[]:controles(h,state.hechos);
+  for(const c of CAMPOS){const w=$('w-'+c);w.classList.remove('f-err','f-wrn');const l=cs.filter(x=>x.f===c);if(l.some(x=>x.l==='err'&&String(h[c]||'').trim()))w.classList.add('f-err');else if(l.some(x=>x.l==='wrn'))w.classList.add('f-wrn')}
+  const ul=$('checks');
+  if(vacio){ul.innerHTML='<li class="inf">Los controles aparecen mientras se completa el formulario.</li>';return cs}
+  const tit={err:'Error',wrn:'Revisar',inf:'Aviso'},ord={err:0,wrn:1,inf:2};
+  const lista=cs.slice().sort((a,b)=>ord[a.l]-ord[b.l]);
+  ul.innerHTML=lista.length?lista.map((c,i)=>`<li class="${c.l}"><b>${tit[c.l]}${c.f==='ESP'?' · trato especial':''}</b>${esc(c.m)}${c.a?`<br><button class="ghost small" data-fix="${i}">${esc(c.a.t)}</button>`:''}</li>`).join(''):'<li class="ok"><b>Sin observaciones</b>El procedimiento está listo para guardar.</li>';
+  const aplicar=b=>{const a=lista[+b.dataset.fix].a;for(const[k,v]of Object.entries(a.set)){if(k==='ESPECIALIDAD'){$('ESPECIALIDAD').value=v;onEsp()}else{$(k).value=v;if(k==='PARTIDO')onPartido()}}revisar();toast('Corregido: '+a.t.replace(/^Usar |^Cambiar a |^Cargar /,''))};
+  ul.onmousedown=e=>{const b=e.target.closest('[data-fix]');if(!b)return;e.preventDefault();aplicar(b)};
+  ul.querySelectorAll('[data-fix]').forEach(b=>b.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();aplicar(b)}});
+  return cs}
+function limpiar(mantener){const keep={FECHA:$('FECHA').value,ESPECIALIDAD:$('ESPECIALIDAD').value};for(const c of CAMPOS)$(c).value='';editId=null;
+  if(mantener){$('FECHA').value=keep.FECHA;$('ESPECIALIDAD').value=keep.ESPECIALIDAD}
+  onEsp();onPartido();$('editBanner').classList.remove('on');$('formTitle').textContent='Nuevo procedimiento';$('btnGuardar').textContent='Guardar procedimiento';contar();revisar();render()}
+function guardar(){
+  $('EXTRACTO').value=limpiarTexto($('EXTRACTO').value);
+  const P=canonPartido($('PARTIDO').value);if(P)$('PARTIDO').value=P;onPartido();
+  const h=leerForm(),cs=controles(h,state.hechos);
+  if(CAMPOS.every(c=>c==='FECHA'||c==='ESPECIALIDAD'||!h[c])){toast('El formulario está vacío.');return}
+  const i=state.hechos.findIndex(x=>x.id===h.id);
+  if(i>=0)state.hechos[i]=h;else state.hechos.push(h);
+  persist();
+  const errs=cs.filter(c=>c.l==='err').length;
+  toast(i>=0?'Procedimiento actualizado.':`Procedimiento N° ${state.hechos.length} guardado${errs?' con '+errs+' error(es) para corregir':''}.`);
+  limpiar(true);$('PARTIDO').focus()}
+function editar(id){const h=state.hechos.find(x=>x.id===id);if(!h)return;editId=id;escribirForm(h);const n=state.hechos.indexOf(h)+1;$('editN').textContent=n;$('editBanner').classList.add('on');$('formTitle').textContent='Editar procedimiento N° '+n;$('btnGuardar').textContent='Guardar cambios';render();window.scrollTo({top:0,behavior:'smooth'})}
+function borrar(id){const h=state.hechos.find(x=>x.id===id);if(!h)return;if(!confirm('¿Borrar el procedimiento N° '+(state.hechos.indexOf(h)+1)+' ('+(h.CARATULA||'sin carátula')+', '+(h.PARTIDO||'sin partido')+')?'))return;state.hechos=state.hechos.filter(x=>x.id!==id);if(editId===id)limpiar();persist();render()}
+
+/* ---------- lista ---------- */
+function render(){
+  const q=norm($('buscar').value);let e=0,w=0;
+  const rows=state.hechos.map((h,i)=>{const cs=controles(h,state.hechos),lv=nivel(cs);if(lv==='err')e++;else if(lv==='wrn')w++;return{h,i,cs,lv}});
+  $('kTot').textContent=state.hechos.length;$('kErr').textContent=e;$('kWrn').textContent=w;
+  const vis=rows.filter(r=>!q||norm(CAMPOS.map(c=>r.h[c]).join(' ')).includes(q));
+  $('tbody').innerHTML=vis.length?vis.map(({h,i,cs})=>{
+    const ne=cs.filter(c=>c.l==='err').length,nw=cs.filter(c=>c.l==='wrn').length,esp=cs.filter(c=>c.f==='ESP');
+    const tip=esc(cs.filter(c=>c.l!=='inf').map(c=>'• '+c.m).join('\n'));
+    return `<tr class="${h.id===editId?'sel':''}"><td class="n">${i+1}</td><td>${esc(h.ESPECIALIDAD)}</td><td>${esc(fechaTxt(h.FECHA))}</td><td>${esc(h.PARTIDO)}<small>${esc(h.LOCALIDAD)}</small></td><td>${esc(h.CARATULA)}</td><td class="hide-m">${esc(h.PU)}</td>
+    <td title="${tip}">${ne?`<span class="pill err">${ne} error${ne>1?'es':''}</span>`:''}${nw?`<span class="pill wrn">${nw} a revisar</span>`:''}${!ne&&!nw?'<span class="pill ok">OK</span>':''}${esp.length?'<span class="pill inf">Trato especial</span>':''}</td>
+    <td style="white-space:nowrap"><button class="ghost small" data-ed="${h.id}">Editar</button> <button class="danger small" data-del="${h.id}" aria-label="Borrar">✕</button></td></tr>`}).join(''):`<tr><td colspan="8" class="empty">${state.hechos.length?'Ningún procedimiento coincide con la búsqueda.':'Todavía no hay procedimientos cargados.'}</td></tr>`;
+  $('tbody').querySelectorAll('[data-ed]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();editar(b.dataset.ed)});
+  $('tbody').querySelectorAll('[data-del]').forEach(b=>b.onclick=ev=>{ev.stopPropagation();borrar(b.dataset.del)});
+}
+
+/* ---------- Excel ---------- */
+function exportar(){
+  if(!window.XLSX){alert('No se pudo cargar la biblioteca de Excel. Hace falta conexión a internet.');return}
+  const op=$('operador').value.trim();
+  const data=state.hechos.map(h=>({ESPECIALIDAD:h.ESPECIALIDAD,FECHA:fechaTxt(h.FECHA),PARTIDO:h.PARTIDO,LOCALIDAD:h.LOCALIDAD,CARATULA:h.CARATULA,COORDENADAS:h.COORDENADAS,PU:h.PU,EXTRACTO:limpiarTexto(h.EXTRACTO)}));
+  const ws=XLSX.utils.json_to_sheet(data,{header:CAMPOS});
+  const hs={font:{bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',fgColor:{rgb:'0D4F5C'}},alignment:{vertical:'center'}};
+  CAMPOS.forEach((c,j)=>{const a=XLSX.utils.encode_cell({r:0,c:j});if(ws[a])ws[a].s=hs});
+  for(let r=1;r<=data.length;r++){const a=XLSX.utils.encode_cell({r,c:7});if(ws[a])ws[a].s={alignment:{wrapText:true,vertical:'top'}}}
+  ws['!cols']=[16,12,20,22,40,26,10,90].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Hoja1');
+  const ctrl=[['CARGA HERMES · PROCEDIMIENTOS · CONTROL'],['Operador',op],['Generado',new Date().toLocaleString('es-AR')],['Procedimientos',data.length],['Versión de la página',VERSION],[],['N°','ESPECIALIDAD','PU','CARÁTULA','OBSERVACIONES DE LA CARGA']];
+  state.hechos.forEach((h,i)=>{const cs=controles(h,state.hechos);const t=cs.map(c=>(c.l==='err'?'[ERROR] ':c.l==='wrn'?'[REVISAR] ':'[AVISO] ')+c.m).join(' | ');ctrl.push([i+1,h.ESPECIALIDAD,h.PU,h.CARATULA,t||'Sin observaciones'])});
+  const w2=XLSX.utils.aoa_to_sheet(ctrl);w2['!cols']=[{wch:8},{wch:16},{wch:12},{wch:36},{wch:110}];XLSX.utils.book_append_sheet(wb,w2,'Control');
+  const fechas=state.hechos.map(h=>h.FECHA).filter(Boolean).sort();const f=fechas.length?fechaTxt(fechas[fechas.length-1]).slice(0,5).replace('/','-'):new Date().toLocaleDateString('es-AR').slice(0,5).replace('/','-');
+  const esp=[...new Set(state.hechos.map(h=>h.ESPECIALIDAD).filter(Boolean))];
+  const nom=('Procedimientos_'+(esp.length===1?esp[0]+'_':'')+f+(op?'_'+op:'')).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w.-]+/g,'_');
+  XLSX.writeFile(wb,nom+'.xlsx');return nom+'.xlsx'}
+function finalizar(){
+  if(!state.hechos.length){toast('No hay procedimientos cargados.');return}
+  if(editId){if(!confirm('Hay un procedimiento en edición sin guardar. ¿Finalizar igual (se pierden esos cambios)?'))return;limpiar()}
+  const rows=state.hechos.map((h,i)=>({i,cs:controles(h,state.hechos)}));
+  const errs=rows.filter(r=>r.cs.some(c=>c.l==='err')),wrns=rows.filter(r=>!r.cs.some(c=>c.l==='err')&&r.cs.some(c=>c.l==='wrn')),esp=rows.filter(r=>r.cs.some(c=>c.f==='ESP'));
+  const op=$('operador').value.trim();
+  let html=`<h3>Finalizar planilla</h3><p>${state.hechos.length} procedimiento(s) cargado(s)${op?' por <b>'+esc(op)+'</b>':''}.</p>`;
+  if(!op)html+=`<p class="pill wrn" style="display:block;padding:8px 10px;border-radius:8px">Falta el nombre del operador (arriba a la derecha). Se recomienda completarlo.</p>`;
+  if(errs.length){html+=`<p><b style="color:var(--err)">Hay ${errs.length} procedimiento(s) con errores.</b> Hay que corregirlos antes de generar el Excel:</p><ul>${errs.map(r=>`<li><a href="#" data-go="${state.hechos[r.i].id}">N° ${r.i+1}</a>: ${esc(r.cs.filter(c=>c.l==='err').map(c=>c.m).join(' '))}</li>`).join('')}</ul><div class="actions"><button class="ghost" id="dlgCerrar">Volver a la carga</button></div>`}
+  else{
+    if(wrns.length)html+=`<p><b style="color:var(--wrn)">${wrns.length} procedimiento(s) tienen observaciones para revisar.</b> Se puede generar igual; las observaciones van en la hoja Control del Excel.</p><ul>${wrns.map(r=>`<li><a href="#" data-go="${state.hechos[r.i].id}">N° ${r.i+1}</a>: ${esc(r.cs.filter(c=>c.l==='wrn').map(c=>c.m).join(' '))}</li>`).join('')}</ul>`;
+    if(esp.length)html+=`<p><b style="color:var(--inf)">Trato especial:</b> ${esp.map(r=>'N° '+(r.i+1)).join(', ')}. Avisar al control.</p>`;
+    if(!wrns.length)html+='<p style="color:var(--ok);font-weight:600">Todo correcto.</p>';
+    html+=`<div class="actions"><button class="ghost" id="dlgCerrar">Seguir cargando</button><button id="dlgOk">Generar Excel</button></div>`}
+  $('dlgBody').innerHTML=html;$('dlg').showModal();
+  $('dlgCerrar').onclick=()=>$('dlg').close();
+  $('dlgBody').querySelectorAll('[data-go]').forEach(a=>a.onclick=ev=>{ev.preventDefault();$('dlg').close();editar(a.dataset.go)});
+  if($('dlgOk'))$('dlgOk').onclick=()=>{const n=exportar();if(!n)return;$('dlgBody').innerHTML=`<h3>Excel generado</h3><p>Se descargó <b>${esc(n)}</b>. Enviarlo al control.</p><p>¿Querés vaciar la planilla para empezar otra? Lo cargado se borra de este navegador.</p><div class="actions"><button class="ghost" id="dlgNo">Mantener</button><button class="danger" id="dlgVaciar">Vaciar planilla</button></div>`;$('dlgNo').onclick=()=>$('dlg').close();$('dlgVaciar').onclick=()=>{state.hechos=[];persist();limpiar();$('dlg').close();toast('Planilla vacía.')}}
+}
+async function abrirExcel(f){
+  if(!window.XLSX){alert('No se pudo cargar la biblioteca de Excel. Hace falta conexión a internet.');return}
+  try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:'',raw:true});
+    const hi=rows.findIndex(r=>r.some(x=>norm(x)==='extracto'));if(hi<0)throw Error('no tiene la columna EXTRACTO');
+    const hd=rows[hi].map(x=>norm(x).toUpperCase());let n=0;
+    for(const r of rows.slice(hi+1)){if(!r.some(x=>String(x).trim()))continue;const o={};hd.forEach((h,j)=>o[h]=r[j]);
+      const h={id:'h'+Date.now()+Math.random().toString(16).slice(2,8)};
+      h.ESPECIALIDAD=canonEsp(o.ESPECIALIDAD)||String(o.ESPECIALIDAD||'').trim();
+      h.FECHA=fechaIso(o.FECHA);const P=canonPartido(String(o.PARTIDO||''))||String(o.PARTIDO||'').trim();h.PARTIDO=P;
+      h.LOCALIDAD=canonLista(o.LOCALIDAD,DATA.LPP[P])||String(o.LOCALIDAD||'').trim();
+      h.CARATULA=canonCar1(String(o.CARATULA||''))||String(o.CARATULA||'').trim();
+      h.PU=String(o.PU??'').replace(/\.0$/,'').trim();h.EXTRACTO=limpiarTexto(o.EXTRACTO);h.COORDENADAS=String(o.COORDENADAS||'').trim();
+      state.hechos.push(h);n++}
+    persist();render();toast(n+' procedimiento(s) agregados desde '+f.name+'.')}catch(e){alert('No se pudo leer el archivo: '+e.message)}}
+
+/* ---------- inicio ---------- */
+restore();
+dl($('dlPartidos'),PART);opts($('ESPECIALIDAD'),ESPS,'Elegir especialidad…');
+$('operador').value=state.operador||'';
+$('operador').oninput=()=>{state.operador=$('operador').value;persist()};
+$('PARTIDO').addEventListener('change',()=>{onPartido();revisar()});
+$('PARTIDO').addEventListener('input',()=>{onPartido();revisar()});
+$('LOCALIDAD').addEventListener('change',()=>{onPartido();revisar()});
+$('ESPECIALIDAD').addEventListener('change',()=>{onEsp();revisar()});
+$('CARATULA').addEventListener('change',revisar);
+for(const c of ['FECHA','LOCALIDAD','PU','COORDENADAS'])$(c).addEventListener('input',revisar);
+$('EXTRACTO').addEventListener('input',()=>{contar();clearTimeout(revisar.t);revisar.t=setTimeout(revisar,250)});
+$('EXTRACTO').addEventListener('blur',()=>{const v=limpiarTexto($('EXTRACTO').value);if(v!==$('EXTRACTO').value){$('EXTRACTO').value=v;contar();revisar();toast('Se unificaron saltos de línea y espacios del extracto.')}});
+$('btnGuardar').onclick=guardar;$('btnLimpiar').onclick=()=>limpiar();
+$('cancelEdit').onclick=e=>{e.preventDefault();limpiar()};
+$('btnFin').onclick=finalizar;
+$('btnNueva').onclick=()=>{if(state.hechos.length&&!confirm('¿Vaciar la planilla? Se borran los '+state.hechos.length+' procedimientos cargados en este navegador. Si no generaste el Excel, se pierden.'))return;state.hechos=[];persist();limpiar();toast('Planilla nueva.')};
+$('btnAbrir').onclick=()=>$('fileIn').click();
+$('fileIn').onchange=e=>{const f=e.target.files[0];if(f)abrirExcel(f);e.target.value=''};
+$('btnMapa').onclick=()=>{const c=parseCoord($('COORDENADAS').value);if(!c){toast('Primero escribir coordenadas válidas.');return}window.open('https://www.google.com/maps?q='+c[0]+','+c[1],'_blank','noopener')};
+$('buscar').oninput=render;
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();guardar()}});
+window.addEventListener('beforeunload',e=>{const h=leerForm();if(CAMPOS.some(c=>c!=='FECHA'&&c!=='ESPECIALIDAD'&&h[c])){e.preventDefault();e.returnValue=''}});
+if(!$('FECHA').value)$('FECHA').value=new Date(Date.now()-864e5-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+onEsp();onPartido();contar();render();revisar();
+</script>
+</body>
+</html>
